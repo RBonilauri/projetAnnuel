@@ -1,0 +1,6 @@
+#ifndef PROJETANNUEL_LIBRARY_H
+#define PROJETANNUEL_LIBRARY_H
+
+void hello(void);
+
+#endif //PROJETANNUEL_LIBRARY_H
