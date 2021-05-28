@@ -66,10 +66,11 @@ DLLEXPORT void train_classification_rosenblatt_rule_linear_model(float* model, f
         float Yk = flattened_dataset_expected_outputs[k];
         float gXk = predict_linear_model_classification(model, Xk, model_len);
         model[0] += alpha * (Yk-gXk) * 1.0;
-        int i = 1;
+        int j = 1;
         while (i < model_len) {
-            model[i] += alpha * (Yk - gXk) * Xk[i-1];
-            i++;
+            model[i] += alpha * (Yk - gXk) * Xk[j-1];
+            j++;
         }
+        i++;
     }
 }
