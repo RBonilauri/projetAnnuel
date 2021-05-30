@@ -51,6 +51,7 @@ float* cut_tab(float* tab, int first, int last) {
 }
 
 DLLEXPORT void train_classification_rosenblatt_rule_linear_model(float* model, float* flattened_dataset_inputs, float* flattened_dataset_expected_outputs,float alpha, int iterations_count, int model_len, int flattened_inputs_len) {
+    // Attention alpha et iterations_count sont initialisé respectivement à 0.001 et 20
     int input_dim = model_len - 1;
     int samples_count = flattened_inputs_len / input_dim;
 
