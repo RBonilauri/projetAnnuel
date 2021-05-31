@@ -251,7 +251,7 @@ void train_classification_stochastic_gradient_backpropagation_mlp_model(MLP mode
     model.train_stichastic_gradient_backpropagation(flattened_dataset_inputs, flattened_dataset_expected_outputs, true, alpha, iterations_count);
 }
 
-void train_classification_stochastic_gradient_backpropagation_mlp_model(MLP model, float* flattened_dataset_inputs, float* flattened_dataset_expected_outputs, float alpha = 0.001, int iterations_count = 100000) {
+void train_regression_stochastic_gradient_backpropagation_mlp_model(MLP model, float* flattened_dataset_inputs, float* flattened_dataset_expected_outputs, float alpha = 0.001, int iterations_count = 100000) {
     model.train_stichastic_gradient_backpropagation(flattened_dataset_inputs, flattened_dataset_expected_outputs, false, alpha, iterations_count);
 }
 

@@ -1,0 +1,4 @@
+C:\Users\bowet\AppData\Local\JetBrains\Toolbox\apps\CLion\ch-0\211.7142.21\bin\cmake\win\bin\cmake.exe -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - NMake Makefiles" C:\Users\bowet\Documents\GitHub\projetAnnuel
+-- Configuring done
+-- Generating done
+-- Build files have been written to: C:/Users/bowet/Documents/GitHub/projetAnnuel/cmake-build-debug

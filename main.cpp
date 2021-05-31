@@ -78,7 +78,6 @@ MLP* create_mlp_model(int* npl, int npl_len) {
                 }
             }
         }
-
     }
 
     for(int i = 0; i < npl_len; i++) {
