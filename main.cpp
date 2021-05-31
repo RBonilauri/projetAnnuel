@@ -55,6 +55,10 @@ MatrixXd hstack(MatrixXd one, MatrixXd X) {
 
 typedef struct MLP_m {
     vector<vector<vector<float>>> W;
+    vector<int> d;
+    vector<vector<float>> X;
+    vector<vector<float>> deltas;
+
 
 }MLP;
 
@@ -68,7 +72,7 @@ MLP* create_mlp_model(int* npl, int npl_len) {
             continue;
         } else {
             for(int i = 0; i < (npl[l-1] + 1); i++) {
-                model->W[1].push_back(vector<float>(npl[l] + 1));
+                model->W[l].push_back(vector<float>(npl[l] + 1));
                 for(int j = 0; j < npl[l] + 1; j++) {
                     model->W[l][i][j] = ((float)rand()/(RAND_MAX/2)) - 1.0;
                 }
@@ -77,48 +81,43 @@ MLP* create_mlp_model(int* npl, int npl_len) {
 
     }
 
-//    model->W.push_back(vector<vector<float>>(0));
-//    model->W.push_back(vector<vector<float>>(0));
-//    model->W[1].push_back(vector<float>(2));
-//    model->W[1][0][0] = 1;
-//    model->W[1][0][1] = 2;
+    for(int i = 0; i < npl_len; i++) {
+        model->d.push_back(npl[i]);
+    }
+
+    for(int l = 0; l < npl_len; l++) {
+        model->X.push_back(vector<float>(0));
+        for(int j = 0; j < (npl[l] + 1); j++) {
+            if (j == 0) {
+                model->X[l].push_back(1.0);
+                cout << "here " << endl;
+            } else {
+                model->X[l].push_back(0.0);
+            }
+        }
+    }
+
+    for(int l = 0; l < npl_len; l++) {
+        model->deltas.push_back(vector<float>(0));
+        for(int j = 0; j < (npl[l] + 1); j++) {
+            model->deltas[l].push_back(0.0);
+        }
+    }
+
     return model;
-
 }
-
-
-//dans le npl :
-/* sa longueur fait reference au nombre de layer: ex: len = 3  [[],[],[]],
- * le premier chiffre dans le tableau npl fait réference au nombre de
- *
- *
- */
 
 
 int main(){
     double tab[6] = {2.2,3.4,1.4,5.1,2.7,7.3};
-//    MatrixXd a = transformTab(tab, 6);
-//    cout << "Premier tab =\n" << a << endl;
-//    MatrixXd reshaped = reshape(a, 3,2);
-//    cout << "Premier tab = \n" << reshaped << endl;
-//    MatrixXd test = ones(3);
-//    std::cout << "One : \n"<< test << endl;
-//    MatrixXd C = hstack(test, reshaped);
-//    std::cout << "result : \n"<< C << endl;
-//    MatrixXd A(2,2);
-//    A << 4,2,2,3;
-//    MatrixXd B(2,2);
-//    B << 3,5,4,8;
-//
-//    cout << A << endl;
-//    cout << B <<endl;
-//    cout << A*B << endl;
-    int npl[2];
-    npl[0] = 2;
-    npl[1] = 2;
 
-    MLP* models = create_mlp_model(npl, 2);
-    cout << "Premier :" << models->W[1][1][2] << endl;
+    int npl[3] = {2,2,1};
+
+
+    MLP* models = create_mlp_model(npl, 3);
+    cout << "Premier :" << models->W[1][1][0] << endl;
+    cout << "npl :" << models->d[2] << endl;
+    cout << "X :" << models->X[1][0] << endl;
 
     return 0;
 };
