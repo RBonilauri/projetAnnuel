@@ -153,7 +153,26 @@ typedef struct MLP_m {
     vector<vector<float>> X;
     vector<vector<float>> deltas;
 
+    void forward_pass(float* sample_inputs, bool is_classification) {
+        int L = d.size() - 1;
 
+        for (int j = 1; j < (d[0] + 1); j++) {
+            X[0][j] = sample_inputs[j-1];
+        }
+
+        for (int l = 1; l < (L+1); l++) {
+            for (int j = 1; j < d[l] + 1; j++) {
+                float sum_result = 0.0;
+                for (int i = 0; i < (d[l-1] + 1); i++) {
+                    sum_result += W[l][i][j] * X[l-1][i];
+                }
+                X[l][j] = sum_result;
+                if (is_classification == true || l < L) {
+                    X[l][j] = tanh(X[l][j]);
+                }
+            }
+        }
+    }
 }MLP;
 
 MLP* create_mlp_model(int* npl, int npl_len) {
@@ -198,5 +217,41 @@ MLP* create_mlp_model(int* npl, int npl_len) {
     }
     
     return model;
+}
+
+float* predict_mlp_model_regression(MLP model, float* sample_inputs) {
+    model.forward_pass(sample_inputs, false);
+    int dernier_indice = (model->X.size()) - 1;
+    int taille = model->(X[dernier_indice].size()) - 1 ;
+    auto newtab = new float[taille];
+
+    for (int i = 0; i < taille; i++) {
+        newtab[i] = model->X[dernier_indice][i+1];
+    }
+
+    return newtab;
+
+}
+
+float* predict_mlp_model_classification(MLP model, float* sample_inputs) {
+    model.forward_pass(sample_inputs, True);
+    int dernier_indice = (model->X.size()) - 1;
+    int taille = model->(X[dernier_indice].size()) - 1 ;
+    auto newtab = new float[taille];
+
+    for (int i = 0; i < taille; i++) {
+        newtab[i] = model->X[dernier_indice][i+1];
+    }
+
+    return newtab;
+
+}
+
+void train_classification_stochastic_gradient_backpropagation_mlp_model(MLP model, float* flattened_dataset_inputs, float* flattened_dataset_expected_outputs, float alpha = 0.001, int iterations_count = 100000) {
+    model.train_stichastic_gradient_backpropagation(flattened_dataset_inputs, flattened_dataset_expected_outputs, true, alpha, iterations_count);
+}
+
+void train_classification_stochastic_gradient_backpropagation_mlp_model(MLP model, float* flattened_dataset_inputs, float* flattened_dataset_expected_outputs, float alpha = 0.001, int iterations_count = 100000) {
+    model.train_stichastic_gradient_backpropagation(flattened_dataset_inputs, flattened_dataset_expected_outputs, false, alpha, iterations_count);
 }
 
