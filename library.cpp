@@ -147,6 +147,17 @@ DLLEXPORT void destroy_linear_model(float* model) {
  * Définitions PMC
  */
 
+DLLEXPORT int reversDigits(int num)
+{
+    int rev_num = 0;
+    while (num > 0)
+    {
+        rev_num = rev_num*10 + num%10;
+        num = num/10;
+    }
+    return rev_num;
+}
+
 typedef struct MLP_m {
     vector<vector<vector<float>>> W;
     vector<int> d;
@@ -173,7 +184,46 @@ typedef struct MLP_m {
             }
         }
     }
+
+    void train_stochastic_gradient_backpropagation(float* flattened_dataset_inputs, float* flattened_dataset_expected_outputs, bool is_classification, float alpha=0.001, int iterations_count=100000){
+        int input_dim = d[0];
+        int output_dim = d[-1];
+        int sample_count = (sizeof(flattened_dataset_inputs)/sizeof(flattened_dataset_inputs[0]))/input_dim;
+        int L = d.size() - 1;
+
+        for(int i=1; i<iterations_count; i++){
+            int k = rand()%sample_count;
+            float sample_input = (flattened_dataset_inputs[k * (input_dim=k+1) * input_dim];
+            int sample_expected_output = flattened_dataset_expected_outputs[k * (output_dim=(k+1)) * output_dim];
+            forward_pass(sample_input, is_classification);
+
+            for(int j=1; i<d[L]; j++){
+                deltas[L][j]=X[L][j]-sample_expected_output[j-1];
+                if(is_classification)
+                    deltas[L][j]=deltas[L][j]*(1-X[L][j] * X[L][j]);
+            }
+
+            for(int l=1; l< reversDigits(L+1);l++){
+                for(int i=0; i<d[l - 1] + 1; i++){
+                    float sum_result = 0.0;
+                    for(int j=0; j<d[l] + 1; j++)
+                        sum_result = sum_result + W[l][i][j] * deltas[l][j];
+
+                    deltas[l - 1][i] = (1 - X[l - 1][i] * X[l - 1][i]) * sum_result;
+                }
+            }
+            for(int l=0; l<L + 1; l++){
+                for(int i=0; i<d[l-1] + 1; i++){
+                    for(int j=1; j<d[l] + 1; j++)
+                        W[l][i][j] -= alpha * X[l - 1][i] * deltas[l][j];
+                }
+            }
+        }
+    }
+
 }MLP;
+
+
 
 MLP* create_mlp_model(int* npl, int npl_len) {
     MLP* model = new MLP[1];
@@ -221,12 +271,12 @@ MLP* create_mlp_model(int* npl, int npl_len) {
 
 float* predict_mlp_model_regression(MLP model, float* sample_inputs) {
     model.forward_pass(sample_inputs, false);
-    int dernier_indice = (model->X.size()) - 1;
-    int taille = model->(X[dernier_indice].size()) - 1 ;
+    int dernier_indice = (model.X.size()) - 1;
+    int taille = model.X[dernier_indice].size() - 1 ;
     auto newtab = new float[taille];
 
     for (int i = 0; i < taille; i++) {
-        newtab[i] = model->X[dernier_indice][i+1];
+        newtab[i] = model.X[dernier_indice][i+1];
     }
 
     return newtab;
@@ -235,23 +285,24 @@ float* predict_mlp_model_regression(MLP model, float* sample_inputs) {
 
 float* predict_mlp_model_classification(MLP model, float* sample_inputs) {
     model.forward_pass(sample_inputs, True);
-    int dernier_indice = (model->X.size()) - 1;
-    int taille = model->(X[dernier_indice].size()) - 1 ;
+    int dernier_indice = (model.X.size()) - 1;
+    int taille = model.X[dernier_indice].size() - 1 ;
     auto newtab = new float[taille];
 
     for (int i = 0; i < taille; i++) {
-        newtab[i] = model->X[dernier_indice][i+1];
+        newtab[i] = model.X[dernier_indice][i+1];
     }
 
     return newtab;
 
 }
 
+
 void train_classification_stochastic_gradient_backpropagation_mlp_model(MLP model, float* flattened_dataset_inputs, float* flattened_dataset_expected_outputs, float alpha = 0.001, int iterations_count = 100000) {
-    model.train_stichastic_gradient_backpropagation(flattened_dataset_inputs, flattened_dataset_expected_outputs, true, alpha, iterations_count);
+    model.train_stochastic_gradient_backpropagation(flattened_dataset_inputs, flattened_dataset_expected_outputs, true, alpha, iterations_count);
 }
 
 void train_regression_stochastic_gradient_backpropagation_mlp_model(MLP model, float* flattened_dataset_inputs, float* flattened_dataset_expected_outputs, float alpha = 0.001, int iterations_count = 100000) {
-    model.train_stichastic_gradient_backpropagation(flattened_dataset_inputs, flattened_dataset_expected_outputs, false, alpha, iterations_count);
+    model.train_stochastic_gradient_backpropagation(flattened_dataset_inputs, flattened_dataset_expected_outputs, false, alpha, iterations_count);
 }
 

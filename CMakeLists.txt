@@ -10,8 +10,4 @@ endif()
 include_directories(${EIGEN_DIR})
 
 
-add_executable(projetAnnuel
-        library.c
-        library.cpp
-        main.cpp
-        )
+add_executable(projetAnnuel library.c library.cpp main.cpp)
