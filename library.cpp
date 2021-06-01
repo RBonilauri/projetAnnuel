@@ -193,9 +193,9 @@ typedef struct MLP_m {
 
         for(int i=1; i<iterations_count; i++){
             int k = rand()%sample_count;
-            float sample_input = (flattened_dataset_inputs[k * (input_dim=k+1) * input_dim];
+            float sample_input = flattened_dataset_inputs[k * (input_dim=k+1) * input_dim];
             int sample_expected_output = flattened_dataset_expected_outputs[k * (output_dim=(k+1)) * output_dim];
-            forward_pass(sample_input, is_classification);
+            forward_pass(&sample_input, is_classification);
 
             for(int j=1; i<d[L]; j++){
                 deltas[L][j]=X[L][j]-sample_expected_output[j-1];
