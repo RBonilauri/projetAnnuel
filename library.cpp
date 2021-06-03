@@ -21,14 +21,14 @@ using Eigen::MatrixXd;
  */
 DLLEXPORT float* create_linear_model(int len){
     float* tab;
-    tab = new float[len];
+    tab = new float[len+1];
     if (tab == nullptr) {
         printf("Run out of memory ! \n");
         exit(1);
     }
     srand(time(NULL));
     rand();
-    for(int i = 0; i < len; i++){
+    for(int i = 0; i < len+1; i++){
         tab[i] = ((float)rand()/(RAND_MAX/2)) - 1.0;
     }
     return tab;
@@ -42,6 +42,10 @@ DLLEXPORT float predict_linear_model_regression(float* model, float* sample_inpu
         i++;
     }
     return result;
+}
+
+DLLEXPORT float test(int a, int b){
+    return a + b;
 }
 
 DLLEXPORT float predict_linear_model_classification(float* model, float * sample_inputs, int len){
