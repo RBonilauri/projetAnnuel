@@ -71,25 +71,21 @@ DLLEXPORT void train_classification_rosenblatt_rule_linear_model(float* model, f
     // Attention alpha et iterations_count sont initialisé respectivement à 0.001 et 20
     int input_dim = model_len - 1;
     int samples_count = flattened_inputs_len / input_dim;
+    int sample_count = int(floor(double(flattened_inputs_len) / double(input_dim)));
+    srand(time(NULL));
+    rand();
 
-    int i = 0;
-    while (i < iterations_count) {
-        srand(time(NULL));
-        int k = ((int) rand() % (samples_count - 1));
-
+    for (int it = 0; it < iterations_count; it++) {
+        int k = ((int) rand() % (samples_count));
         int first = k * input_dim;
         int last = (k+1) * input_dim;
         float* Xk = cut_tab(flattened_dataset_inputs, first, last);
-
         float Yk = flattened_dataset_expected_outputs[k];
         float gXk = predict_linear_model_classification(model, Xk, model_len);
         model[0] += alpha * (Yk-gXk) * 1.0;
-        int j = 1;
-        while (j < model_len) {
-            model[i] += alpha * (Yk - gXk) * Xk[j-1];
-            j++;
+        for (int j = 1; j < model_len; j++) {
+            model[j] += alpha * (Yk - gXk) * Xk[j-1];
         }
-        i++;
     }
 }
 
@@ -128,7 +124,7 @@ MatrixXd hstack(MatrixXd one, MatrixXd X) {
 
 DLLEXPORT void train_regression_pseudo_inverse_linear_model(float* model, float* flattened_dataset_inputs, float* flattened_dataset_expected_outputs,int model_len, int flattened_dataset_inputs_len, int flattened_dataset_expected_outputs_len) {
     int input_dim = model_len - 1;
-    int samples_count = flattened_dataset_inputs_len / input_dim;
+    int samples_count = int(floor(double(flattened_dataset_inputs_len) / double(input_dim)));
     MatrixXd X = transformTab(flattened_dataset_inputs, flattened_dataset_inputs_len);
     MatrixXd Y = transformTab(flattened_dataset_expected_outputs, flattened_dataset_expected_outputs_len);
 
