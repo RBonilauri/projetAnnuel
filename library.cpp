@@ -269,14 +269,14 @@ DLLEXPORT int getLengthX(MLP* model) {
     return (model->X[dernier_indice].size()) - 1 ;
 }
 
-DLLEXPORT float* predict_mlp_model_regression(MLP model, float* sample_inputs) {
-    model.forward_pass(sample_inputs, false);
-    int dernier_indice = (model.X.size()) - 1;
-    int taille = (model.X[dernier_indice].size()) - 1 ;
+DLLEXPORT float* predict_mlp_model_regression(MLP* model, float* sample_inputs) {
+    model->forward_pass(sample_inputs, false);
+    int dernier_indice = (model->X.size()) - 1;
+    int taille = (model->X[dernier_indice].size()) - 1 ;
     auto newtab = new float[taille];
 
     for (int i = 0; i < taille; i++) {
-        newtab[i] = model.X[dernier_indice][i+1];
+        newtab[i] = model->X[dernier_indice][i+1];
     }
 
     return newtab;
