@@ -1,6 +1,9 @@
 #include <cstdio>
+#include <iostream>
 #include <cstdlib>
 #include <Eigen/Dense>
+#include <cmath>
+#include <new>
 #include <unsupported/Eigen/CXX11/Tensor>
 
 using namespace Eigen;
@@ -64,7 +67,6 @@ float* cut_tab(const float* tab, int first, int last) {
     }
     return new_tab;
 }
-
 
 
 DLLEXPORT void train_classification_rosenblatt_rule_linear_model(float* model, float* flattened_dataset_inputs, float* flattened_dataset_expected_outputs,float alpha, int iterations_count, int model_len, int flattened_inputs_len) {
@@ -304,3 +306,72 @@ DLLEXPORT void train_regression_stochastic_gradient_backpropagation_mlp_model(ML
     model->train_stochastic_gradient_backpropagation(flattened_dataset_inputs, flattened_dataset_inputs_len,flattened_dataset_expected_outputs, false, alpha, iterations_count);
 }
 
+DLLEXPORT int get_distance(float* x1, float* x2, int len_x1){
+    int sum=0;
+    for(int i = 0; i < len_x1; i++){
+        sum += pow((x1[i] - x2[i]),2);
+    }
+    return sqrt(sum);
+}
+int getIndex(vector<int> v, int K){
+    auto it = find(v.begin(), v.end(), K);
+    // If element was found
+    if (it != v.end()){
+        // calculating the index
+        // of K
+        int index = it - v.begin();
+        return index;
+    }
+    else {
+        return -1;
+    }
+}
+DLLEXPORT float kmeans(float* X, int len_x, int k, int max_iters, int len_centroids){
+
+    vector<int> centroids = {};
+    for (int i=0; i<k; ++i) centroids[i]=rand() % 100;
+
+    boolean converged = false;
+    int current_iter = 0;
+
+    while(!converged && current_iter < max_iters){
+        vector<int> cluster_list = {};
+        for(int i=0; i < len_centroids; i++) cluster_list[i];
+        for(int x=0; x<len_x;x++) {
+            vector<int> distances_list = {};
+
+            for (int c = 0; c < len_centroids; c++) {
+                distances_list[c] = get_distance(reinterpret_cast<float *>(distances_list[c]),
+                                                 reinterpret_cast<float *>(distances_list[x])
+                        ,distances_list.size());
+            }
+            int m=*min_element(distances_list.begin(), distances_list.end());
+            cluster_list[getIndex(distances_list, m)]=x;
+        }
+        for(int item=0; item<cluster_list.size();item++) {
+            if (cluster_list[item] != 0)
+                cluster_list[item] = item;
+        }
+        vector<int> prev_centroids = centroids;
+        centroids = {};
+        int sum=0;
+
+        for(int j=0;j<cluster_list.size();j++)
+            sum+=cluster_list[j];
+        centroids[0] = sum/cluster_list.size();
+
+        int sum1=0;
+        for(int j=0;j<prev_centroids.size();j++)
+            sum1+=prev_centroids[j];
+        int sum2=0;
+        for(int k=0;k<centroids.size();k++)
+            sum2+=centroids[k];
+        int pattern = abs(sum1 - sum2);
+        cout <<'K-MEANS: '<< pattern <<endl;
+
+        int converged = (pattern == 0);
+        int current_iter=0;
+        current_iter += 1;
+    }
+
+}
