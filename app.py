@@ -9,11 +9,9 @@ def main():
             "The answer can be 'telluric', 'gaseous' or 'other'.\n"
             "\nTo do so, copy and paste the link of the desired image in the text bar below.\n")
 
-    #url = st.text_input("Paste image url")
-
     form = st.form(key='planet_name')
     url = form.text_input('Paste image url')
-    submit = form.form_submit_button('Submit')
+    form.form_submit_button('Submit')
 
     if url != "":
         st.image(url, width=400)
