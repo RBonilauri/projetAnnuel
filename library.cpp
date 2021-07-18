@@ -1,7 +1,15 @@
 #include <cstdio>
 #include <cstdlib>
+#include <fstream>
 #include <Eigen/Dense>
 #include <unsupported/Eigen/CXX11/Tensor>
+#include "cereal/archives/json.hpp"
+#include <cereal/types/vector.hpp>
+#include <cereal/types/unordered_map.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/archives/binary.hpp>
+#include <vector>
+#include <time.h>
 
 using namespace Eigen;
 using namespace std;
@@ -9,6 +17,9 @@ using Eigen::MatrixXd;
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #define DLLEXPORT extern "C" __declspec(dllexport)
+
+class JSONOutputArchive;
+
 #else
 #define DLLEXPORT
 #endif
@@ -33,6 +44,9 @@ DLLEXPORT float* create_linear_model(int len){
     }
     return tab;
 }
+
+
+
 
 DLLEXPORT float predict_linear_model_regression(float* model, float* sample_inputs, int len) {
     float result = model[0] * 1.0;
@@ -302,5 +316,75 @@ DLLEXPORT void train_classification_stochastic_gradient_backpropagation_mlp_mode
 
 DLLEXPORT void train_regression_stochastic_gradient_backpropagation_mlp_model(MLP* model, float* flattened_dataset_inputs, int flattened_dataset_inputs_len, float* flattened_dataset_expected_outputs, float alpha = 0.001, int iterations_count = 100000) {
     model->train_stochastic_gradient_backpropagation(flattened_dataset_inputs, flattened_dataset_inputs_len,flattened_dataset_expected_outputs, false, alpha, iterations_count);
+}
+
+/*
+ * Save and load
+ */
+
+DLLEXPORT void savePMC(MLP* model, const char* modelN) {
+    std::string modelName(modelN);
+    std::ofstream os("C:\\Users\\Toky Cedric\\Desktop\\" + modelName + ".json");
+    cereal::JSONOutputArchive archive(os);
+    archive(CEREAL_NVP(model->W), CEREAL_NVP(model->X), CEREAL_NVP(model->d), CEREAL_NVP(model->deltas));
+}
+
+DLLEXPORT char* __stdcall test_str(char *str_ptr)
+{
+    return str_ptr;
+}
+
+DLLEXPORT MLP* loadPMC(const char* modelName) {
+    MLP* model = new MLP[1];
+    std::string str(modelName);
+    ifstream stream("C:\\Users\\Toky Cedric\\Desktop\\" + str + ".json");
+    cereal::JSONInputArchive archive(stream);
+    vector<vector<vector<float>>> W;
+    vector<vector<float>> X;
+    vector<int> d;
+    vector<vector<float>> deltas;
+
+    archive(W, X, d, deltas);
+
+    model->W = W;
+    model->d = d;
+    model->X = X;
+    model->deltas = deltas;
+
+    return model;
+
+}
+
+DLLEXPORT void save_linear_model(float* mod, int len) {
+    vector<float> model;
+    for (int i = 0; i < len + 1; i++) {
+        model.push_back(mod[i]);
+    }
+    std::ofstream os("C:\\Users\\Toky Cedric\\Desktop\\lastModel.json");
+    cereal::JSONOutputArchive archive(os);
+    bool arr[] = {true, false};
+    archive(CEREAL_NVP(model),
+            arr);
+}
+
+DLLEXPORT float* load_linear_mode(const char* modelName) {
+    std::string str(modelName);
+    std::ifstream is("C:\\Users\\Toky Cedric\\Desktop\\" + str + ".json");
+    cereal::JSONInputArchive archive(is);
+
+    vector<float> myModel;
+    archive(myModel);
+    int tabSize = myModel.size();
+    float *model;
+    model = static_cast<float *>(malloc(tabSize * sizeof(float)));
+
+    for(auto x:myModel){
+        cout << x << endl;
+    }
+
+    for(int i = 0; i < tabSize; i++) {
+        model[i] = myModel[i];
+    }
+    return model;
 }
 
