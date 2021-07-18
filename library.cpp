@@ -312,17 +312,17 @@ DLLEXPORT int get_distance(vector<float> x1, vector<float> x2){
     return sqrt(sum);
 }
 
-DLLEXPORT vector<vector<float>> convert_to_one_hot(float* x, int num_of_class, int len_x){
-    vector<vector<float>> arr;
-    for(int i = 0 ; i < len_x ; i += 1){
-        vector<float> row (num_of_class, 0.0);
-        row[x[i]] = 1.0;
-        arr.push_back(row);
-    }
-    return arr;
-}
-
 DLLEXPORT typedef struct RBF {
+
+    vector<vector<float>> convert_to_one_hot(float* x, int num_of_class, int len_x){
+        vector<vector<float>> arr;
+        for(int i = 0 ; i < len_x ; i += 1){
+            vector<float> row (num_of_class, 0.0);
+            row[x[i]] = 1.0;
+            arr.push_back(row);
+        }
+        return arr;
+    }
 
     float rbf(vector<float> x, vector<float> c, double s){
         int distance = get_distance(x, c);
