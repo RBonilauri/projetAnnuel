@@ -306,14 +306,16 @@ DLLEXPORT void train_regression_stochastic_gradient_backpropagation_mlp_model(ML
     model->train_stochastic_gradient_backpropagation(flattened_dataset_inputs, flattened_dataset_inputs_len,flattened_dataset_expected_outputs, false, alpha, iterations_count);
 }
 
-DLLEXPORT int get_distance(float* x1, float* x2, int len_x1){
+DLLEXPORT float get_distance(vector<float> x1, vector<float> x2){
     int sum=0;
-    for(int i = 0; i < len_x1; i++){
+    for(int i = 0; i < x1.size(); i++){
         sum += pow((x1[i] - x2[i]),2);
     }
     return sqrt(sum);
 }
-int getIndex(vector<int> v, int K){
+
+
+int getIndex(vector<float> v, int K){
     auto it = find(v.begin(), v.end(), K);
     // If element was found
     if (it != v.end()){
@@ -326,52 +328,137 @@ int getIndex(vector<int> v, int K){
         return -1;
     }
 }
-DLLEXPORT float kmeans(float* X, int len_x, int k, int max_iters, int len_centroids){
+DLLEXPORT typedef struct KMEANS {
+    vector<vector<float>> centroids;
+    vector<vector<float>> cluster_list = {};
 
-    vector<int> centroids = {};
-    for (int i=0; i<k; ++i) centroids[i]=rand() % 100;
+    vector<vector<float> kmeans(vector<float> X, int k, int max_iters) {
 
-    boolean converged = false;
-    int current_iter = 0;
+        for (int i = 0; i < k; ++i)
+            for (int j = 0; j < k; ++j)
+                centroids[i][j] = rand() % 100;
 
-    while(!converged && current_iter < max_iters){
-        vector<int> cluster_list = {};
-        for(int i=0; i < len_centroids; i++) cluster_list[i];
-        for(int x=0; x<len_x;x++) {
-            vector<int> distances_list = {};
+        boolean converged = false;
+        int current_iter = 0;
 
-            for (int c = 0; c < len_centroids; c++) {
-                distances_list[c] = get_distance(reinterpret_cast<float *>(distances_list[c]),
-                                                 reinterpret_cast<float *>(distances_list[x])
-                        ,distances_list.size());
+        while (!converged && current_iter < max_iters) {
+
+            for (float i = 0; i < centroids.size(); i++) cluster_list[i];
+            for (float x = 0; x < X.size(); x++) {
+                vector<float> distances_list = {};
+
+                for (float c = 0; c < centroids.size(); c++) {
+                    distances_list[c] = get_distance(centroids[c], centroids[x]);
+                }
+                int m = *min_element(distances_list.begin(), distances_list.end());
+
+                cluster_list[getIndex(distances_list, m)][getIndex(distances_list, m)] = x;
             }
-            int m=*min_element(distances_list.begin(), distances_list.end());
-            cluster_list[getIndex(distances_list, m)]=x;
+            for (int item = 0; item < cluster_list.size(); item++) {
+                for (int items = 0; items < cluster_list.size(); items++)
+                    if (cluster_list[item][items] != 0)
+                        cluster_list[item][items] = items;
+            }
+            vector<vector<float>> prev_centroids = centroids;
+            centroids = {};
+            int sum = 0;
+            int sum1 = 0;
+            int sum2 = 0;
+
+            for (int j = 0; j < cluster_list.size(); j++)
+                for (int i = 0; i < cluster_list.size(); i++)
+                    sum += cluster_list[j][i];
+            for (int c = 0; c < centroids.size(); c++)
+                for (int n = 0; n < centroids.size(); n++)
+                    centroids[c][n] = sum / cluster_list.size();
+
+
+            for (int i = 0; i < prev_centroids.size(); i++)
+                for (int j = 0; j < prev_centroids.size(); j++)
+                    sum1 += prev_centroids[i][j];
+
+            for (int k = 0; k < centroids.size(); k++)
+                for (int n = 0; n < centroids.size(); n++)
+                    sum2 += centroids[k][n];
+
+            int pattern = abs(sum1 - sum2);
+            cout << 'K-MEANS: ' << pattern << endl;
+
+            int converged = (pattern == 0);
+            int current_iter = 0;
+            current_iter += 1;
+
+            for (int x = 0; x < cluster_list.size(); x++) {}
         }
-        for(int item=0; item<cluster_list.size();item++) {
-            if (cluster_list[item] != 0)
-                cluster_list[item] = item;
+        return centroids;
+    }
+};
+
+DLLEXPORT typedef struct RBF {
+    vector<vector<float>> X;
+    vector<double> Y;
+    int tX;
+    int tY;
+    int num_of_classes;
+    int k;
+    bool std_from_clusters=true;
+
+    vector<vector<float>> convert_to_one_hot(float* x, int num_of_class, int len_x){
+        vector<vector<float>> arr;
+        for(int i = 0 ; i < len_x ; i += 1){
+            vector<float> row (num_of_class, 0.0);
+            row[x[i]] = 1.0;
+            arr.push_back(row);
         }
-        vector<int> prev_centroids = centroids;
-        centroids = {};
-        int sum=0;
-
-        for(int j=0;j<cluster_list.size();j++)
-            sum+=cluster_list[j];
-        centroids[0] = sum/cluster_list.size();
-
-        int sum1=0;
-        for(int j=0;j<prev_centroids.size();j++)
-            sum1+=prev_centroids[j];
-        int sum2=0;
-        for(int k=0;k<centroids.size();k++)
-            sum2+=centroids[k];
-        int pattern = abs(sum1 - sum2);
-        cout <<'K-MEANS: '<< pattern <<endl;
-
-        int converged = (pattern == 0);
-        int current_iter=0;
-        current_iter += 1;
+        return arr;
     }
 
-}
+    float rbf(vector<float> x, vector<float> c, double s){
+        int distance = get_distance(x, c);
+        return 1 / exp((distance * -1) / pow(s, 2));
+    }
+
+    vector<vector<float>> rbf_list(vector<vector<float> X, vector<vector<float>> centroids, float std_list){
+        vector<vector<float>> rbf_list;
+        for(vector<float> x : X){
+            vector<float> rbf_row;
+            for(vector<float> c : centroids){
+                rbf_row.push_back(rbf(x, c, std_list));
+            }
+            rbf_list.push_back(rbf_row);
+        }
+        return rbf_list;
+    }
+
+    void fit(){
+        int max_iters;
+        vector<vector<float>> centroids = kmeans(X, k, max_iters=1000);
+        vector<vector<float>> std_list = kmeans(X, k, max_iters=1000);
+        if(!std_from_clusters){
+            vector<float> list_dist={};
+            float dMax =0;
+            for(int c1=0; c1<centroids.size(); c1++)
+                for(int c2=0; c2<centroids[c1].size(); c2++)
+                    if(dMax< get_distance(centroids[c1], centroids[c2])){
+                        dMax = get_distance(centroids[c1], centroids[c2]);
+                    }
+            for(int i=0; i<k; i++){
+                std_list.push_back(dMax / sqrt(2 * k));
+            }
+        }
+        vector<vector<float>>  RBF_X;
+        RBF_X = rbf_list(X, centroids, std_list);
+
+        self.w = np.linalg.pinv(RBF_X.T @ RBF_X) @ RBF_X.T @ self.convert_to_one_hot(self.y, self.number_of_classes)
+
+        RBF_list_tst = self.rbf_list(self.tX, self.centroids, self.std_list)
+
+        self.pred_ty = RBF_list_tst @ self.w
+
+        self.pred_ty = np.array([np.argmax(x) for x in self.pred_ty])
+
+        diff = self.pred_ty - self.ty
+
+        print('Accuracy: ', len(np.where(diff == 0)[0]) / len(diff))
+    }
+};
