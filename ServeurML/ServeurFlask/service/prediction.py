@@ -46,7 +46,7 @@ def get_flat_image(im):
 
 
 
-def get_prediction(model, image_test):
+def get_MLP_prediction(model, image_test):
     path_to_dll = "C:/Users/Toky Cedric/Desktop/Etudes/Projet Annuel/CPPDLL_ForPython/cmake-build-debug/CPPDLL_ForPython.dll"
     mylib = cdll.LoadLibrary(path_to_dll)
 
@@ -73,7 +73,30 @@ def get_prediction(model, image_test):
 
     print("after predict")
     print(type(predicted_outputs[0]))
+    return predicted_outputs[0]
+
+def get_MLineaire_prediction(model, image_test):
+    path_to_dll = "C:/Users/Toky Cedric/Desktop/Etudes/Projet Annuel/CPPDLL_ForPython/cmake-build-debug/CPPDLL_ForPython.dll"
+    mylib = cdll.LoadLibrary(path_to_dll)
+
+    mylib.load_linear_model.restype = POINTER(c_float)
+    mylib.load_linear_model.argtype = [c_char_p]
+    model = mylib.load_linear_model(model.encode("utf-8"))
+    x = np.ctypeslib.as_array(model, (3,))
+
+    print(x)
+
+    result = []
+    for p in image_test :
+        arr_size_result = len(p)
+        arr_type_result = c_float * arr_size_result
+        arr_result = arr_type_result(*p)
+        mylib.predict_linear_model_classification.argtypes = [POINTER(c_float), arr_type_result, c_int]
+        mylib.predict_linear_model_classification.restype = c_float
+
+        tmp = mylib.predict_linear_model_classification(model, arr_result, len(x))
+        result.append(tmp)
 
 
-    return predicted_outputs[0];
+    return result[0];
 

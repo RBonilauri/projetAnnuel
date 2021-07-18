@@ -5,6 +5,10 @@ import random
 import requests
 
 def affichage():
+    # Load du json contenant les inforamtions dess modeles
+
+
+
     serveur = "http://127.0.0.1:5000/"
     st.set_page_config(layout="wide")
     st.title("Projet Machine Learning 3IABD")
@@ -30,11 +34,22 @@ def affichage():
     type_of_model = side.selectbox("Choisissez le type de classification à faire", mode)
 
     if type_of_model == "Planète ?":
-        side.write("Vous avez choisis de Classer l'image en : Planète ou non")
+        model_path = "C:/Users/Toky Cedric/Desktop/scratch.json"
     else:
-        side.write("Vous avez choisis de Classer l'image en : Planète tellurique ou gazeuse ?")
+        model_path = "C:/Users/Toky Cedric/Desktop/TelGaz.json"
 
-    list_model = ["testPlaneteModel2","autres model"]
+    with open(model_path) as jsonFile :
+        Modele = json.load(jsonFile)
+        jsonFile.close()
+
+    if type_of_model == "Planète ?":
+        side.write("Vous avez choisis de Classer l'image en : **Planète ou non**")
+    else:
+        side.write("Vous avez choisis de Classer l'image en : **Planète tellurique ou gazeuse**")
+
+    list_model = []
+    for key in Modele:
+        list_model.append(Modele[key]["nom"])
 
     choix_model = side.selectbox("Choisissez le modele à utiliser : ", list_model)
 
@@ -47,7 +62,7 @@ def affichage():
     url = form.text_input('Paste image url')
     form.form_submit_button('Submit')
     st.markdown("""---""")
-    middle_page, right_side = st.beta_columns((1, 1))
+    middle_page, right_side = st.beta_columns((2, 1))
     if url != "":
         middle_page.markdown("""
         ## L'image que vous avez ajouté : 
@@ -62,10 +77,19 @@ def affichage():
             "url": json.dumps(url)
         }
 
-        req_path = serveur + "predict"
+        if Modele[choix_model]["type"] == "PMC":
+            req_path = serveur + "predictMLP"
 
-        response = requests.get(req_path, params=request)
-        result = response.json()
+            response = requests.get(req_path, params=request)
+            result = response.json()
+
+        else:
+            req_path = serveur + "predictMLineaire"
+
+            response = requests.get(req_path, params=request)
+            result = response.json()
+
+
 
         if response.status_code == 200:
             result = result["value"]
@@ -89,7 +113,11 @@ def affichage():
 
     right_side.markdown(f"""
             ## Information sur le modèle choisi
-            Nom du modèle : {choix_model}
+            **Nom du modèle** : {choix_model} \n
+            **Type du modele** : {Modele[choix_model]["type"]} \n
+            **epoch** : {Modele[choix_model]["nombre_epoch"]} \n
+            **lr** : {Modele[choix_model]["lr"]} \n
+            **Commentaire** : {Modele[choix_model]["commentaire"]} \n
         """)
 
 
