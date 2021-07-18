@@ -332,7 +332,7 @@ DLLEXPORT typedef struct KMEANS {
     vector<vector<float>> centroids;
     vector<vector<float>> cluster_list = {};
 
-    vector<vector<float> kmeans(vector<float> X, int k, int max_iters) {
+    vector<vector<float>> kmeans(vector<float> X, int k, int max_iters) {
 
         for (int i = 0; i < k; ++i)
             for (int j = 0; j < k; ++j)
@@ -393,7 +393,7 @@ DLLEXPORT typedef struct KMEANS {
         return centroids;
     }
 };
-
+/*
 DLLEXPORT typedef struct RBF {
     vector<vector<float>> X;
     vector<double> Y;
@@ -461,4 +461,4 @@ DLLEXPORT typedef struct RBF {
 
         print('Accuracy: ', len(np.where(diff == 0)[0]) / len(diff))
     }
-};
+};*/
