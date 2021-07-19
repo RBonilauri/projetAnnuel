@@ -324,7 +324,7 @@ DLLEXPORT void train_regression_stochastic_gradient_backpropagation_mlp_model(ML
 
 DLLEXPORT void savePMC(MLP* model, const char* modelN) {
     std::string modelName(modelN);
-    std::ofstream os("C:\\Users\\Toky Cedric\\Desktop\\" + modelName + ".json");
+    std::ofstream os("C:\\Users\\33660\\Desktop\\" + modelName + ".json");
     cereal::JSONOutputArchive archive(os);
     archive(CEREAL_NVP(model->W), CEREAL_NVP(model->X), CEREAL_NVP(model->d), CEREAL_NVP(model->deltas));
 }
@@ -337,7 +337,7 @@ DLLEXPORT char* __stdcall test_str(char *str_ptr)
 DLLEXPORT MLP* loadPMC(const char* modelName) {
     MLP* model = new MLP[1];
     std::string str(modelName);
-    ifstream stream("C:\\Users\\Toky Cedric\\Desktop\\" + str + ".json");
+    ifstream stream("C:\\Users\\33660\\Desktop\\" + str + ".json");
     cereal::JSONInputArchive archive(stream);
     vector<vector<vector<float>>> W;
     vector<vector<float>> X;
@@ -360,7 +360,7 @@ DLLEXPORT void save_linear_model(float* mod, int len) {
     for (int i = 0; i < len + 1; i++) {
         model.push_back(mod[i]);
     }
-    std::ofstream os("C:\\Users\\Toky Cedric\\Desktop\\lastModel.json");
+    std::ofstream os("C:\\Users\\33660\\Desktop\\lastModel.json");
     cereal::JSONOutputArchive archive(os);
     bool arr[] = {true, false};
     archive(CEREAL_NVP(model),
@@ -369,7 +369,7 @@ DLLEXPORT void save_linear_model(float* mod, int len) {
 
 DLLEXPORT float* load_linear_mode(const char* modelName) {
     std::string str(modelName);
-    std::ifstream is("C:\\Users\\Toky Cedric\\Desktop\\" + str + ".json");
+    std::ifstream is("C:\\Users\\33660\\Desktop\\" + str + ".json");
     cereal::JSONInputArchive archive(is);
 
     vector<float> myModel;
