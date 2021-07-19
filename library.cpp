@@ -1,10 +1,15 @@
 #include <cstdio>
-#include <iostream>
 #include <cstdlib>
+#include <fstream>
 #include <Eigen/Dense>
-#include <cmath>
-#include <new>
 #include <unsupported/Eigen/CXX11/Tensor>
+#include "cereal/archives/json.hpp"
+#include <cereal/types/vector.hpp>
+#include <cereal/types/unordered_map.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/archives/binary.hpp>
+#include <vector>
+#include <time.h>
 
 using namespace Eigen;
 using namespace std;
@@ -12,6 +17,9 @@ using Eigen::MatrixXd;
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #define DLLEXPORT extern "C" __declspec(dllexport)
+
+class JSONOutputArchive;
+
 #else
 #define DLLEXPORT
 #endif
@@ -36,6 +44,9 @@ DLLEXPORT float* create_linear_model(int len){
     }
     return tab;
 }
+
+
+
 
 DLLEXPORT float predict_linear_model_regression(float* model, float* sample_inputs, int len) {
     float result = model[0] * 1.0;
@@ -284,7 +295,7 @@ DLLEXPORT float* predict_mlp_model_regression(MLP* model, float* sample_inputs) 
     return newtab;
 }
 
-DLLEXPORT float* predict_mlp_model_classification(MLP *model, float* sample_inputs) {
+DLLEXPORT float* predict_mlp_model_classification(MLP* model, float* sample_inputs) {
     model->forward_pass(sample_inputs, true);
     int dernier_indice = (model->X.size()) - 1;
     int taille = (model->X[dernier_indice].size()) - 1 ;
@@ -306,9 +317,13 @@ DLLEXPORT void train_regression_stochastic_gradient_backpropagation_mlp_model(ML
     model->train_stochastic_gradient_backpropagation(flattened_dataset_inputs, flattened_dataset_inputs_len,flattened_dataset_expected_outputs, false, alpha, iterations_count);
 }
 
+/*
+ * Save and load
+ */
+
 DLLEXPORT void savePMC(MLP* model, const char* modelN) {
     std::string modelName(modelN);
-    std::ofstream os("C:\\Users\\Toky Cedric\\Desktop\\" + modelName + ".json");
+    std::ofstream os("C:\\Users\\bowet\\OneDrive\\Bureau" + modelName + ".json");
     cereal::JSONOutputArchive archive(os);
     archive(CEREAL_NVP(model->W), CEREAL_NVP(model->X), CEREAL_NVP(model->d), CEREAL_NVP(model->deltas));
 }
@@ -321,7 +336,7 @@ DLLEXPORT char* __stdcall test_str(char *str_ptr)
 DLLEXPORT MLP* loadPMC(const char* modelName) {
     MLP* model = new MLP[1];
     std::string str(modelName);
-    ifstream stream("C:\\Users\\Toky Cedric\\Desktop\\" + str + ".json");
+    ifstream stream("C:\\Users\\bowet\\OneDrive\\Bureau\\" + str + ".json");
     cereal::JSONInputArchive archive(stream);
     vector<vector<vector<float>>> W;
     vector<vector<float>> X;
@@ -344,7 +359,7 @@ DLLEXPORT void save_linear_model(float* mod, int len) {
     for (int i = 0; i < len + 1; i++) {
         model.push_back(mod[i]);
     }
-    std::ofstream os("C:\\Users\\Toky Cedric\\Desktop\\lastModel.json");
+    std::ofstream os("C:\\Users\\bowet\\OneDrive\\Bureau\\lastModel.json");
     cereal::JSONOutputArchive archive(os);
     bool arr[] = {true, false};
     archive(CEREAL_NVP(model),
@@ -353,7 +368,7 @@ DLLEXPORT void save_linear_model(float* mod, int len) {
 
 DLLEXPORT float* load_linear_mode(const char* modelName) {
     std::string str(modelName);
-    std::ifstream is("C:\\Users\\Toky Cedric\\Desktop\\" + str + ".json");
+    std::ifstream is("C:\\Users\\bowet\\OneDrive\\Bureau\\" + str + ".json");
     cereal::JSONInputArchive archive(is);
 
     vector<float> myModel;
@@ -372,8 +387,7 @@ DLLEXPORT float* load_linear_mode(const char* modelName) {
     return model;
 }
 
-
-
+/*
 DLLEXPORT float get_distance(vector<float> x1, vector<float> x2){
     int sum=0;
     for(int i = 0; i < x1.size(); i++){
@@ -396,72 +410,59 @@ int getIndex(vector<float> v, int K){
         return -1;
     }
 }
-DLLEXPORT typedef struct KMEANS {
+DLLEXPORT vector<vector<float>> kmeans(vector<float> X, int k, int max_iters){
+
     vector<vector<float>> centroids;
-    vector<vector<float>> cluster_list = {};
+    for (int i=0; i<k; ++i) centroids[i]=rand() % 100;
 
-    vector<vector<float>> kmeans(vector<float> X, int k, int max_iters) {
+    boolean converged = false;
+    int current_iter = 0;
 
-        for (int i = 0; i < k; ++i)
-            for (int j = 0; j < k; ++j)
-                centroids[i][j] = rand() % 100;
+    while(!converged && current_iter < max_iters) {
+        vector<vector<float>> cluster_list = {};
+        for (float i = 0; i < centroids.size(); i++) cluster_list[i];
+        for (float x = 0; x < X.size(); x++) {
+            vector<float> distances_list = {};
 
-        boolean converged = false;
-        int current_iter = 0;
-
-        while (!converged && current_iter < max_iters) {
-
-            for (float i = 0; i < centroids.size(); i++) cluster_list[i];
-            for (float x = 0; x < X.size(); x++) {
-                vector<float> distances_list = {};
-
-                for (float c = 0; c < centroids.size(); c++) {
-                    distances_list[c] = get_distance(centroids[c], centroids[x]);
-                }
-                int m = *min_element(distances_list.begin(), distances_list.end());
-
-                cluster_list[getIndex(distances_list, m)][getIndex(distances_list, m)] = x;
+            for (float c = 0; c < centroids.size(); c++) {
+                distances_list[c] = get_distance(centroids[c],centroids[x]);
             }
-            for (int item = 0; item < cluster_list.size(); item++) {
-                for (int items = 0; items < cluster_list.size(); items++)
-                    if (cluster_list[item][items] != 0)
-                        cluster_list[item][items] = items;
-            }
-            vector<vector<float>> prev_centroids = centroids;
-            centroids = {};
-            int sum = 0;
-            int sum1 = 0;
-            int sum2 = 0;
-
-            for (int j = 0; j < cluster_list.size(); j++)
-                for (int i = 0; i < cluster_list.size(); i++)
-                    sum += cluster_list[j][i];
-            for (int c = 0; c < centroids.size(); c++)
-                for (int n = 0; n < centroids.size(); n++)
-                    centroids[c][n] = sum / cluster_list.size();
-
-
-            for (int i = 0; i < prev_centroids.size(); i++)
-                for (int j = 0; j < prev_centroids.size(); j++)
-                    sum1 += prev_centroids[i][j];
-
-            for (int k = 0; k < centroids.size(); k++)
-                for (int n = 0; n < centroids.size(); n++)
-                    sum2 += centroids[k][n];
-
-            int pattern = abs(sum1 - sum2);
-            cout << 'K-MEANS: ' << pattern << endl;
-
-            int converged = (pattern == 0);
-            int current_iter = 0;
-            current_iter += 1;
-
-            for (int x = 0; x < cluster_list.size(); x++) {}
+            int m = *min_element(distances_list.begin(), distances_list.end());
+            cluster_list[getIndex(distances_list, m)] = x;
         }
-        return centroids;
+        for (int item = 0; item < cluster_list.size(); item++) {
+            if (cluster_list[item] != 0)
+                cluster_list[item] = item;
+        }
+        vector<vector<float>> prev_centroids = centroids;
+        centroids = {};
+        int sum = 0;
+        int sum1 = 0;
+        int sum2 = 0;
+
+        for (int j = 0; j < cluster_list.size(); j++)
+            sum += cluster_list[j];
+        centroids[] = sum / cluster_list.size();
+
+
+        for (int j = 0; j < prev_centroids.size(); j++)
+            sum1 += prev_centroids[j];
+
+        for (int k = 0; k < centroids.size(); k++)
+            sum2 += centroids[k];
+
+        int pattern = abs(sum1 - sum2);
+        cout << 'K-MEANS: ' << pattern << endl;
+
+        int converged = (pattern == 0);
+        int current_iter = 0;
+        current_iter += 1;
+
+        for (int x = 0; x < cluster_list.size(); x++){}
     }
-};
-/*
+    return centroids;
+}
+
 DLLEXPORT typedef struct RBF {
     vector<vector<float>> X;
     vector<double> Y;
