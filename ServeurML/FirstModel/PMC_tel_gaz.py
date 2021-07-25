@@ -6,55 +6,19 @@ import numpy as np
 from PIL import Image
 from matplotlib import pyplot as plt
 
+from service.service import import_dataset
 
-def import_images_and_assign_labels(
-        folder, label, X, Y
-):
-    for file in os.listdir(folder):
-        image_path = os.path.join(folder, file)
-        im = Image.open(image_path)
-        im = im.resize((64, 64))
-        im = im.convert("RGB")
-        im_arr = np.array(im)
-        im_arr = np.reshape(im_arr, (64 * 64 * 3))
-        X.append(im_arr)
-        Y.append(label)
-
-def import_dataset():
-    # dataset_folder = "C:/Users/Toky Cedric/Desktop/datasetPlanet"
-    dataset_folder = "C:/Users/Toky Cedric/Desktop/Dataset"
-    train_folder = os.path.join(dataset_folder, "train")
-    test_folder = os.path.join(dataset_folder, "test")
-
-    X_train = []
-    y_train = []
-    import_images_and_assign_labels(
-        os.path.join(train_folder, "gazeuses"), 1.0, X_train, y_train
-    )
-    import_images_and_assign_labels(
-        os.path.join(train_folder, "telluriques"), -1.0, X_train, y_train
-    )
-    X_test = []
-    y_test = []
-    import_images_and_assign_labels(
-        os.path.join(test_folder, "gazeuses"), 1.0, X_test, y_test
-    )
-    import_images_and_assign_labels(
-        os.path.join(test_folder, "telluriques"), -1.0, X_test, y_test
-    )
-    return (np.array(X_train) / 255.0, np.array(y_train)), \
-           (np.array(X_test) / 255.0, np.array(y_test))
 
 def run():
     (X_train, y_train), (X_test, y_test) = import_dataset()
 
-    path_to_dll = "C:/Users/Toky Cedric/Desktop/Etudes/Projet Annuel/CPPDLL_ForPython/cmake-build-debug/CPPDLL_ForPython.dll"
+    path_to_dll = "C:/Users/bowet/Documents/projet_cdll/cmake-build-debug/projet_cdll.dll"
     mylib = cdll.LoadLibrary(path_to_dll)
 
     dataset_inputs = np.array(X_train)
     dataset_expected_outputs = np.array(y_train)
 
-    init_tab = [2, 64, 1]
+    init_tab = [2, 256,256, 1]
     init_size = len(init_tab)
     init_type = c_int * init_size
     init = init_type(*init_tab)
@@ -70,7 +34,7 @@ def run():
     colors = ["blue" if output >= 0 else "red" for output in dataset_expected_outputs]
 
     flattened_dataset_inputs = []
-    for p in dataset_inputs :
+    for p in dataset_inputs:
         flattened_dataset_inputs.append(p[0])
         flattened_dataset_inputs.append(p[1])
 
@@ -88,9 +52,9 @@ def run():
     mylib.train_classification_stochastic_gradient_backpropagation_mlp_model.restype = None
 
     mylib.train_classification_stochastic_gradient_backpropagation_mlp_model(model, arr_flat, arrsize_flat, arr_exp,
-                                                                             0.001, 10000)
+                                                                             0.01, 10000)
     predicted_outputs = []
-    for p in test_dataset :
+    for p in test_dataset:
         arrsizeP = len(p)
         arrtypeP = c_float * arrsizeP
         arrP = arrtypeP(*p)
@@ -108,49 +72,15 @@ def run():
     plt.show()
 
     flattened_dataset_inputs = []
-    for p in dataset_inputs :
+    for p in dataset_inputs:
         flattened_dataset_inputs.append(p[0])
         flattened_dataset_inputs.append(p[1])
-
 
     print("predicted_outputs_: \n", predicted_outputs)
     mylib.savePMC.argtypes = [c_void_p, c_char_p]
     mylib.savePMC.restype = None
-    mylib.savePMC(model, b'firstPMCmodel3')
+    mylib.savePMC(model, b'PMC_tel_gaz')
 
-
-    #
-    # print("Sur le dataset de Train")
-    # print(model.predict(X_train))
-    #
-    # print("Sur le dataset de Test")
-    # print(model.predict(X_test))
-    #
-    # logs = model.fit(X_train, y_train, epochs=500,
-    #           validation_data=(X_test, y_test),
-    #                  batch_size=3)
-    #
-    # model.save("./model2")
-    #
-    # print("Sur le dataset de Train")
-    # print(model.predict(X_train))
-    #
-    # print("Sur le dataset de Test")
-    # print(model.predict(X_test))
-    #
-    #
-    # model= keras.models.load_model('./model3')
-    # print("Sur le dataset de Train")
-    # print(model.predict(X_train))
-    #
-    # print("Sur le dataset de Test")
-    # print(model.predict(X_test))
-    #
-    #
-    # # plt.plot(logs.history['loss'], c="orange")
-    # # plt.plot(logs.history['val_loss'], c="green")
-    # # plt.show()
 
 if __name__ == "__main__":
     run()
-    print("hey")

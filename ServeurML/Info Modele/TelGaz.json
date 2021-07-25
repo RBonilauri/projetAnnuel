@@ -1,0 +1,25 @@
+{
+  "PMC_tel_gaz": {
+    "nom" : "PMC_tel_gaz",
+    "type" : "PMC",
+    "structure" : {
+      "in" : 2,
+      "couche_cache": {
+        "nombre" : 3,
+        "neurones" : 5
+      },
+      "out": 1
+    },
+    "nombre_epoch" : 100000,
+    "lr" : 0.001,
+    "commentaire": "Modele de MLP fournit de mauvaises prédictions pour reconnaitre le type de planete"
+  },
+  "MLineaire_tel_gaz": {
+    "nom": "MLineaire_tel_gaz",
+    "type": "MLineaire",
+    "structure": 2,
+    "nombre_epoch": 10000,
+    "lr": 0.001,
+    "commentaire": "Modele lineaire pour deux classes (tellurique ou gazeuse)"
+  }
+}

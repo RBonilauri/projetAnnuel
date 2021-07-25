@@ -1,0 +1,28 @@
+{
+  "testPlaneteModel2": {
+    "nom" : "testPlaneteModel2",
+    "type" : "PMC",
+    "structure" : {
+      "in" : 2,
+      "couche_cache": {
+        "nombre" : 1,
+        "neurones" : 64
+      },
+      "out": 1
+    },
+    "nombre_epoch" : 10000,
+    "lr" : 0.001,
+    "commentaire": "Modele de MLP qui marche pas mal pour reconnaitre si la photo est une photo de planete ou pas "
+  },
+  
+  "MLineaire_planete": {
+    "nom" : "MLineaire_planete",
+    "type": "Modele lineaire",
+    "structure": 2,
+    "nombre_epoch" : 10000,
+    "lr" : 0.001,
+    "commentaire": "Modele linéaire pour deux classes qui a l'air e pas mal marcher aussi pour reconnaitre la photo ..."
+  }
+
+
+}

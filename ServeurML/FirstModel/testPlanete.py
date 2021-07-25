@@ -6,48 +6,13 @@ import numpy as np
 from PIL import Image
 from matplotlib import pyplot as plt
 
-def import_images_and_assign_labels(
-        folder, label, X, Y
-):
-    for file in os.listdir(folder):
-        image_path = os.path.join(folder, file)
-        im = Image.open(image_path)
-        im = im.resize((32, 32))
-        im = im.convert("RGB")
-        im_arr = np.array(im)
-        im_arr = np.reshape(im_arr, (32 * 32 * 3))
-        X.append(im_arr)
-        Y.append(label)
+from service.service import import_dataset
 
-def import_dataset():
-    # dataset_folder = "C:/Users/Toky Cedric/Desktop/datasetPlanet"
-    dataset_folder = "C:/Users/Toky Cedric/Desktop/datasetPlanet"
-    train_folder = os.path.join(dataset_folder, "train")
-    test_folder = os.path.join(dataset_folder, "test")
-
-    X_train = []
-    y_train = []
-    import_images_and_assign_labels(
-        os.path.join(train_folder, "planete"), 1.0, X_train, y_train
-    )
-    import_images_and_assign_labels(
-        os.path.join(train_folder, "pasPlanete"), -1.0, X_train, y_train
-    )
-    X_test = []
-    y_test = []
-    import_images_and_assign_labels(
-        os.path.join(test_folder, "planete"), 1.0, X_test, y_test
-    )
-    import_images_and_assign_labels(
-        os.path.join(test_folder, "pasPlanete"), -1.0, X_test, y_test
-    )
-    return (np.array(X_train) / 255.0, np.array(y_train)), \
-           (np.array(X_test) / 255.0, np.array(y_test))
 
 def run():
     (X_train, y_train), (X_test, y_test) = import_dataset()
 
-    path_to_dll = "C:/Users/Toky Cedric/Desktop/Etudes/Projet Annuel/CPPDLL_ForPython/cmake-build-debug/CPPDLL_ForPython.dll"
+    path_to_dll = "C:/Users/bowet/Documents/projet_cdll/cmake-build-debug/projet_cdll.dll"
     mylib = cdll.LoadLibrary(path_to_dll)
 
     dataset_inputs = np.array(X_train)
