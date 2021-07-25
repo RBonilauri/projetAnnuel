@@ -1,7 +1,15 @@
 #include <cstdio>
 #include <cstdlib>
+#include <fstream>
 #include <Eigen/Dense>
 #include <unsupported/Eigen/CXX11/Tensor>
+#include "cereal/archives/json.hpp"
+#include <cereal/types/vector.hpp>
+#include <cereal/types/unordered_map.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/archives/binary.hpp>
+#include <vector>
+#include <time.h>
 
 using namespace Eigen;
 using namespace std;
@@ -9,6 +17,9 @@ using Eigen::MatrixXd;
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #define DLLEXPORT extern "C" __declspec(dllexport)
+
+class JSONOutputArchive;
+
 #else
 #define DLLEXPORT
 #endif
@@ -33,6 +44,9 @@ DLLEXPORT float* create_linear_model(int len){
     }
     return tab;
 }
+
+
+
 
 DLLEXPORT float predict_linear_model_regression(float* model, float* sample_inputs, int len) {
     float result = model[0] * 1.0;
@@ -304,40 +318,73 @@ DLLEXPORT void train_regression_stochastic_gradient_backpropagation_mlp_model(ML
     model->train_stochastic_gradient_backpropagation(flattened_dataset_inputs, flattened_dataset_inputs_len,flattened_dataset_expected_outputs, false, alpha, iterations_count);
 }
 
-DLLEXPORT int get_distance(vector<float> x1, vector<float> x2){
-    int sum=0;
-    for(int i = 0; i < x1.size(); i++){
-        sum += pow((x1[i] - x2[i]),2);
-    }
-    return sqrt(sum);
+/*
+ * Save and load
+ */
+
+DLLEXPORT void savePMC(MLP* model, const char* modelN) {
+    std::string modelName(modelN);
+    std::ofstream os("C:\\Users\\33660\\Desktop\\" + modelName + ".json");
+    cereal::JSONOutputArchive archive(os);
+    archive(CEREAL_NVP(model->W), CEREAL_NVP(model->X), CEREAL_NVP(model->d), CEREAL_NVP(model->deltas));
 }
 
-DLLEXPORT typedef struct RBF {
+DLLEXPORT char* __stdcall test_str(char *str_ptr)
+{
+    return str_ptr;
+}
 
-    vector<vector<float>> convert_to_one_hot(float* x, int num_of_class, int len_x){
-        vector<vector<float>> arr;
-        for(int i = 0 ; i < len_x ; i += 1){
-            vector<float> row (num_of_class, 0.0);
-            row[x[i]] = 1.0;
-            arr.push_back(row);
-        }
-        return arr;
+DLLEXPORT MLP* loadPMC(const char* modelName) {
+    MLP* model = new MLP[1];
+    std::string str(modelName);
+    ifstream stream("C:\\Users\\33660\\Desktop\\" + str + ".json");
+    cereal::JSONInputArchive archive(stream);
+    vector<vector<vector<float>>> W;
+    vector<vector<float>> X;
+    vector<int> d;
+    vector<vector<float>> deltas;
+
+    archive(W, X, d, deltas);
+
+    model->W = W;
+    model->d = d;
+    model->X = X;
+    model->deltas = deltas;
+
+    return model;
+
+}
+
+DLLEXPORT void save_linear_model(float* mod, int len) {
+    vector<float> model;
+    for (int i = 0; i < len + 1; i++) {
+        model.push_back(mod[i]);
+    }
+    std::ofstream os("C:\\Users\\33660\\Desktop\\lastModel.json");
+    cereal::JSONOutputArchive archive(os);
+    bool arr[] = {true, false};
+    archive(CEREAL_NVP(model),
+            arr);
+}
+
+DLLEXPORT float* load_linear_model(const char* modelName) {
+    std::string str(modelName);
+    std::ifstream is("C:\\Users\\33660\\Desktop\\" + str + ".json");
+    cereal::JSONInputArchive archive(is);
+
+    vector<float> myModel;
+    archive(myModel);
+    int tabSize = myModel.size();
+    float *model;
+    model = static_cast<float *>(malloc(tabSize * sizeof(float)));
+
+    for(auto x:myModel){
+        cout << x << endl;
     }
 
-    float rbf(vector<float> x, vector<float> c, double s){
-        int distance = get_distance(x, c);
-        return 1 / exp((distance * -1) / pow(s, 2));
+    for(int i = 0; i < tabSize; i++) {
+        model[i] = myModel[i];
     }
+    return model;
+}
 
-    vector<vector<float>> rbf_list(vector<vector<float>> X, vector<vector<float>> centroids, float std_list){
-        vector<vector<float>> rbf_list;
-        for(vector<float> x : X){
-            vector<float> rbf_row;
-            for(vector<float> c : centroids){
-                rbf_row.push_back(rbf(x, c, std_list));
-            }
-            rbf_list.push_back(rbf_row);
-        }
-        return rbf_list;
-    }
-};

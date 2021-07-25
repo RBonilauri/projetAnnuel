@@ -1,0 +1,60 @@
+import streamlit as st
+import random
+import pymongo
+
+my_client = pymongo.MongoClient("mongodb://localhost:27017/")
+my_db = my_client["ProjetAnnuel"]
+my_col = my_db["test"]
+
+
+def main():
+    menu = ["Home page", "Saved examples"]
+    result = ""
+
+    with st.sidebar:
+        page = st.selectbox("Choose your page", menu)
+
+    st.title("PROJET ANNUEL")
+    st.markdown("____________")
+
+    if page == "Home page":
+        st.text("The purpose of this application is to define the type of a given planet.\n"
+                "The answer can be 'telluric', 'gaseous' or 'other'.\n"
+                "\nTo do so, copy and paste the link of the desired image in the text bar below.\n")
+
+        form = st.form(key='planet_name')
+        url = form.text_input('Paste image url')
+        form.form_submit_button('Submit')
+
+        if url != "":
+            tmp = url
+            st.image(url, width=200)
+            rand_int = random.Random()
+            st.title("Result :")
+            if rand_int == 1:
+                result = st.text("It's a telluric planet !")
+            else:
+                result = st.text("It's a gaseous planet !")
+
+            save_button = st.button('Save')
+
+            if save_button:
+                st.text('This example has been saved !')
+                x = {"url": tmp}
+                # x = {"url": tmp, "result": result}
+                # TODO: VERIFIER URL UNIQUE
+                my_col.insert_one(x)
+
+    elif page == "Saved examples":
+        for x in my_col.find({}, {"_id": 0, "url": 1}):
+            col1, col2 = st.beta_columns([1, 3])
+            with col1:
+                st.image(x["url"], width=150)
+            with col2:
+                st.text("url :")
+                st.info(x["url"])
+            st.markdown("____________")
+
+
+if __name__ == "__main__":
+    main()
