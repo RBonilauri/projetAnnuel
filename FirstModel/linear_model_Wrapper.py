@@ -24,7 +24,7 @@ class MyLinearModelWrapper:
         x = np.ctypeslib.as_array(self.model, (3,))
 
         # TODO: verfier X
-        print("let's go")
+        # print("let's go")
 
         if self.is_classification:
             dataset_inputs = np.array(X)
