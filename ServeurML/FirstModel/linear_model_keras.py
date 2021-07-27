@@ -12,7 +12,7 @@ def run():
 
     model = keras.experimental.LinearModel()
 
-    model.compile(optimizer='sgd', loss='mse', metrics=['accuracy'])
+    model.compile(optimizer=keras.optimizers.SGD(lr=1e-4), loss='mse', metrics=['accuracy'])
 
     print("Sur le dataset de Train")
     print(model.predict(X_train))
@@ -20,7 +20,7 @@ def run():
     print("Sur le dataset de Test")
     print(model.predict(X_test))
 
-    logs = model.fit(X_train, y_train, epochs=100,
+    logs = model.fit(X_train, y_train, epochs=400,
                      validation_data=(X_test, y_test),
                      batch_size=2)
 
@@ -30,16 +30,20 @@ def run():
     print("Sur le dataset de Test")
     print(model.predict(X_test))
 
+    model.save("C:/Users/33660/CLionProjects/projetAnnuel789/ServeurML/Model/ML_save")
+
     plt.plot(logs.history['loss'], c="orange")
     plt.plot(logs.history['val_loss'], c="blue")
     plt.ylabel('loss')
     plt.xlabel('epoch')
+    plt.legend(['train', 'val'], loc='upper left')
     plt.show()
 
     plt.plot(logs.history['accuracy'], c="yellow")
     plt.plot(logs.history['val_accuracy'], c="red")
     plt.ylabel('accuracy')
     plt.xlabel('epoch')
+    plt.legend(['train', 'val'], loc='upper left')
     plt.show()
 
 
